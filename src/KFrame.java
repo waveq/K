@@ -161,6 +161,7 @@ public class KFrame extends JFrame implements ActionListener, MessageReceiver, D
 		}
 		else {
 			final JButton shapeButton = new JButton();
+			
 			ImageIcon icon = new ImageIcon(KFrame.class.getResource(name+".png"));
 			shapeButton.setIcon(icon);
 			shapeButton.setBackground(Color.white);

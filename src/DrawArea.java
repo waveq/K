@@ -14,7 +14,7 @@ class DrawArea extends JPanel {
 	
 	private DrawPointReceiver drawPointReceiver;
 		
-	private ArrayList<String> pointWithColor = new ArrayList<String>();
+	private ArrayList<PointWithColor> pointWithColor = new ArrayList<PointWithColor>();
 	
 	private int mouseX;
 	
@@ -22,7 +22,7 @@ class DrawArea extends JPanel {
 	
 	private String myCoords;
 	
-	private Color selectedColor = Color.black;
+	private String selectedColor = "java.awt.Color[r=0,g=0,b=0]";
 	
 	Color colorOfDot = Color.black;
 	
@@ -55,35 +55,31 @@ class DrawArea extends JPanel {
 		 * draw all points on area
 		 * String pointWithColor contains coordinates of dot and color
 		 */
-		for(String p: pointWithColor) {
-			String stringToParse = p.toString();
-			
-			String delims = "[|]";
-			String[] tokens = stringToParse.split(delims);
-			int x = Integer.parseInt(tokens[0]);
-			int y = Integer.parseInt(tokens[1]);
-			changeColor(tokens[2]);
-			dotShape = tokens[3];
-			
+		synchronized(pointWithColor) {
+			for(PointWithColor p: pointWithColor) {
+				int x = p.getMouseX();
+				int y = p.getMouseY();
+				changeColor(p.getColor());
+				dotShape = p.getShape();
+	
+				Ellipse2D smallEllipse = new Ellipse2D.Double(x-5,y-5,10,10);
+				Ellipse2D bigEllipse = new Ellipse2D.Double(x-10,y-10,20,20);
+				Rectangle2D smallSquare = new Rectangle2D.Double(x-5, y-5, 10, 10);
+				Rectangle2D bigSquare = new Rectangle2D.Double(x-10, y-10, 20, 20);
+				Rectangle2D dot = new Rectangle2D.Double(x, y, 2, 2);
 				
-			
-			Ellipse2D smallEllipse = new Ellipse2D.Double(x-5,y-5,10,10);
-			Ellipse2D bigEllipse = new Ellipse2D.Double(x-10,y-10,20,20);
-			Rectangle2D smallSquare = new Rectangle2D.Double(x-5, y-5, 10, 10);
-			Rectangle2D bigSquare = new Rectangle2D.Double(x-10, y-10, 20, 20);
-			Rectangle2D dot = new Rectangle2D.Double(x, y, 2, 2);
-			
-			g2.setPaint(colorOfDot);
-			if(dotShape.equals("smallCircle")) 
-				g2.fill(smallEllipse);
-			else if(dotShape.equals("smallSquare"))
-				g2.fill(smallSquare);
-			else if(dotShape.equals("bigCircle"))
-				g2.fill(bigEllipse);
-			else if(dotShape.equals("bigSquare"))
-				g2.fill(bigSquare);
-			else if(dotShape.equals("dot"));
-				g2.fill(dot);
+				g2.setPaint(colorOfDot);
+				if(dotShape.equals("smallCircle")) 
+					g2.fill(smallEllipse);
+				else if(dotShape.equals("smallSquare"))
+					g2.fill(smallSquare);
+				else if(dotShape.equals("bigCircle"))
+					g2.fill(bigEllipse);
+				else if(dotShape.equals("bigSquare"))
+					g2.fill(bigSquare);
+				else if(dotShape.equals("dot"));
+					g2.fill(dot);
+			}
 		}
 	}
 	
@@ -115,8 +111,10 @@ class DrawArea extends JPanel {
 			if(imDrawer) {
 				mouseX=e.getX();
 				mouseY=e.getY();
-				pointWithColor.add(mouseX+"|"+mouseY+"|"+selectedColor.toString()+"|"+dotShape);
-				myCoords = (mouseX +"|"+mouseY+"|"+selectedColor.toString()+"|"+dotShape);
+				synchronized(pointWithColor) {
+					pointWithColor.add(new PointWithColor(mouseX, mouseY, selectedColor, dotShape));
+				}
+				myCoords = (mouseX +"|"+mouseY+"|"+selectedColor+"|"+dotShape);
 				drawPointReceiver.dotToSend(myCoords);
 				repaint();
 			}
@@ -125,9 +123,11 @@ class DrawArea extends JPanel {
 			if(imDrawer) {
 				mouseX=e.getX();
 				mouseY=e.getY();
-				pointWithColor.add(mouseX+"|"+mouseY+"|"+selectedColor.toString()+"|"+dotShape);
-				
-				myCoords = (mouseX +"|"+mouseY+"|"+selectedColor.toString()+"|"+dotShape);
+				synchronized(pointWithColor) {
+					pointWithColor.add(new PointWithColor(mouseX, mouseY, selectedColor, dotShape));
+				}
+			
+				myCoords = (mouseX +"|"+mouseY+"|"+selectedColor+"|"+dotShape);
 				drawPointReceiver.dotToSend(myCoords);
 				repaint();
 			}
@@ -135,7 +135,7 @@ class DrawArea extends JPanel {
 	}
 	
 	public void setColor(Color color) {
-		selectedColor = color;
+		selectedColor = color.toString();
 	}
 	
 	public void imDrawer() {
@@ -167,12 +167,12 @@ class DrawArea extends JPanel {
 	 * @param color color of dot
 	 * @param shape shape of color:smallCircle/bigCircle/smallSquare/bigSquare/dot.
 	 */
-	public void addCoordinates(int x, int y,String color, String shape) {
+	public void addCoordinates(int x, int y, String color, String shape) {
 		if(color != null) {
-			pointWithColor.add(x+"|"+y+"|"+color+"|"+shape);
+			pointWithColor.add(new PointWithColor(x, y, color, shape));
 		}
 		else {
-			pointWithColor.add(x+"|"+y+"|"+selectedColor.toString()+"|"+shape);
+			pointWithColor.add(new PointWithColor(x, y, selectedColor, shape));
 		}
 		repaint();
 	}

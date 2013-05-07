@@ -35,7 +35,7 @@ public class KFrame extends JFrame implements ActionListener, MessageReceiver, D
 	//private String[] myWords = {"rapper", "circus", "apple tree", "notebook", "wallet",
 	//		"alien", "terrorist", "chicken", "sheep"};
 	
-	private String[] myWords = {"owca", "terrorysta", "portfel", "laptop", "ufo", "dzik"};
+	private String[] myWords = {"owca", "terrorysta", "portfel", "laptop", "ufo", "dzik", "kot"};
 	
 	private Random randomGenerator = new Random();
 	
@@ -189,13 +189,16 @@ public class KFrame extends JFrame implements ActionListener, MessageReceiver, D
 				connectToServer();
 			}
 			else if(event.getSource () == textField) {
-				consoleCommands(textField.getText());
-				String msg = textField.getText();
-				writeLine("Me: " +msg);
-				sendMessage(msg);
+				if(consoleCommands(textField.getText())) {
+					consoleCommands(textField.getText());
+					String msg = textField.getText();
+					writeLine("Me: " +msg);
+					sendMessage(msg);
+					}
 				textField.setText("");
 			}
 			else if(event.getSource() == exitButton) {
+				disconnect();
 				dispose();
 			}
 			else if(event.getSource() == beDrawerButton) {
@@ -224,11 +227,21 @@ public class KFrame extends JFrame implements ActionListener, MessageReceiver, D
 	 * @throws IOException
 	 */
 	
-	private void consoleCommands (String command) throws IOException {
-		if(command.equals("/k.disconnect"))
+	private boolean consoleCommands (String command) throws IOException {
+		if(command.equals("/k.disconnect")) {
+			disconnect(); 
+			return false;
+		}
+		else if(command.equals("/k.exit")) {
 			disconnect();
-		else if(command.equals("/k.exit"))
 			dispose();
+			return false;
+		}
+		else if(command.equals("/k.impicasso")) {
+			drawArea.imDrawer();
+			return false;
+		}
+		return true;
 	}
 	
 	private void disconnect() throws IOException {
@@ -270,7 +283,7 @@ public class KFrame extends JFrame implements ActionListener, MessageReceiver, D
 			@Override
 			public void run() {
 					writeLine(line);
-					if(line.equals("They: "+chosenWord)) {
+					if(line.toLowerCase().equals("they: "+chosenWord)) {
 						writeLine("Word guessed.");
 						writeLine("You earned 0.5pkt.");
 						points+=0.5;
@@ -299,9 +312,7 @@ public class KFrame extends JFrame implements ActionListener, MessageReceiver, D
 		chosenWord = myWords[randomGenerator.nextInt(myWords.length)];
 		wordLabel.setVisible(false);
 		// validating
-		wordLabel.setText("Your word: "+chosenWord);
-		
-		
+		wordLabel.setText("Your word: "+chosenWord);	
 	}
 	
 	/**
@@ -316,8 +327,7 @@ public class KFrame extends JFrame implements ActionListener, MessageReceiver, D
 				e.printStackTrace();
 				writeLine("Can't send drawing coordinates: " + e.toString());
 			}
-		}
-		
+		}	
 	}
 
 	/**
@@ -331,7 +341,6 @@ public class KFrame extends JFrame implements ActionListener, MessageReceiver, D
 	 * OR string that contains keywords to wipe drawArea, hide beDrawerButton and 
 	 * notice that password was correct.
 	 */
-
 	@Override
 	public void gotCoordinates(String coord) {
 		if(coord.equals("pwGuessed")) {
@@ -347,8 +356,7 @@ public class KFrame extends JFrame implements ActionListener, MessageReceiver, D
 		}
 		else if(coord.equals("wipeArea")) {
 			drawArea.wipeArea();
-		}
-				
+		}			
 		else {		
 		String delims = "[|]";
 		String[] tokens = coord.split(delims);

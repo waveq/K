@@ -1,6 +1,8 @@
 import java.awt.Color;
 
-
+/**
+ * Class to create object that coordinates, shape and color of dot are stored in.
+ */
 public class PointWithColor {
 	private final int mouseX;
 	

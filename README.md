@@ -8,3 +8,5 @@ Gra polega na tym, że jeden z użytkowników dostaje hasło do odgadnięcia ora
 natomiast drugi musi je odgadnąć. 
 
 Do stworzenia okienek użyłem Swinga, natomiast łączenie obywa się przez sockety.
+
+![alt tag](https://raw.github.com/waveq/K/master/screenshots/screenshot1.jpg)
